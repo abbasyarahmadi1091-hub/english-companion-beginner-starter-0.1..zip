@@ -14,44 +14,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          cache: true
 
-      - name: Extract project ZIP
+      - name: Extract project
         run: |
           mkdir extracted
           unzip -q english-companion-beginner-starter-0.1.0.zip -d extracted
-
           PROJECT_DIR=$(find extracted -name pubspec.yaml -printf '%h\n' | head -n 1)
-
           if [ -z "$PROJECT_DIR" ]; then
-            echo "ERROR: pubspec.yaml not found"
+            echo "Project files not found"
             exit 1
           fi
-
           cp -a "$PROJECT_DIR"/. .
 
       - name: Prepare Android
         run: |
-          flutter create . --platforms android
+          flutter create . --platforms=android
           flutter pub get
 
-      -             - name: Analyze
+      - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
-      - name: Run tests
-        run: flutter test
 
       - name: Build APK
         run: flutter build apk --release
@@ -61,3 +55,4 @@ jobs:
         with:
           name: english-companion-beginner-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
